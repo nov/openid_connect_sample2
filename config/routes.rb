@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  resource :authorization, only: [:new, :create]
+  resource :user_info, only: :show
 
-  # Serve websocket cable requests in-process
-  # mount ActionCable.server => '/cable'
+  get '.well-known/:id', to: 'discovery#show'
+  post 'access_tokens', to: proc { |env| [200, {}, ['fake']] }
+  get  'jwks.json',     to: proc { |env| [200, {'Content-Type' => 'application/json'}, [IdToken.config[:jwk_set].to_json]] }
 end
