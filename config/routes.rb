@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  resource :authorization, only: [:new, :create]
+  resources :authorizations, only: [:new, :create]
   resource :user_info, only: :show
 
   get '.well-known/:id', to: 'discovery#show'
