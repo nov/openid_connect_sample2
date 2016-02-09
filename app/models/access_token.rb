@@ -4,6 +4,12 @@ class AccessToken < ApplicationRecord
 
   before_validation :setup, on: :create
 
+  scope :valid, lambda {
+    where('expires_at >= ?', Time.now.utc)
+  }
+
+  delegate :account, :client, to: :authorization
+
   def to_bearer_token
     Rack::OAuth2::AccessToken::Bearer.new(
       access_token: token,

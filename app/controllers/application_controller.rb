@@ -3,8 +3,5 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
 
-  def current_account
-    # NOTE: implement end-user authentication logic by your own
-    Account.first || Account.create
-  end
+  include Concerns::Authentication
 end
