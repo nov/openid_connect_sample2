@@ -1,10 +1,11 @@
 class Account < ApplicationRecord
   has_many :authorizations
-  before_create :setup_identifier
+
+  before_validation :setup, on: :create
 
   private
 
-  def setup_identifier
+  def setup
     self.identifier = SecureRandom.hex 16
   end
 end

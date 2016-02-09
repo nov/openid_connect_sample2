@@ -27,9 +27,9 @@ class DiscoveryController < ApplicationController
     config = OpenIDConnect::Discovery::Provider::Config::Response.new(
       issuer: IdToken.config[:issuer],
       authorization_endpoint: new_authorization_url,
-      token_endpoint: access_tokens_url,
+      token_endpoint: tokens_url,
       userinfo_endpoint: user_info_url,
-      jwks_uri: IdToken.config[:jwks_uri],
+      jwks_uri: jwks_url,
       scopes_supported: Scope.all.collect(&:name),
       response_types_supported: [:code],
       grant_types_supported: [:authorization_code],

@@ -20,9 +20,7 @@ class AuthorizationsController < ApplicationController
         client: current_client,
         nonce: accepted_params[:nonce]
       )
-      requested_scopes.each do |scope|
-        @authorization.scopes << scope
-      end
+      @authorization.scopes << requested_scopes
     end
     @authorization
   end

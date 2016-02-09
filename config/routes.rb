@@ -3,6 +3,6 @@ Rails.application.routes.draw do
   resource :user_info, only: :show
 
   get '.well-known/:id', to: 'discovery#show'
-  post 'access_tokens', to: proc { |env| [200, {}, ['fake']] }
-  get  'jwks.json',     to: proc { |env| [200, {'Content-Type' => 'application/json'}, [IdToken.config[:jwk_set].to_json]] }
+  post 'tokens', to: proc { |env| TokenEndpoint.new.call(env) }
+  get 'jwks.json', as: :jwks, to: proc { |env| [200, {'Content-Type' => 'application/json'}, [IdToken.config[:jwk_set].to_json]] }
 end
