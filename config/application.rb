@@ -13,6 +13,7 @@ module ConnectOp
     # -- all .rb files in that directory are automatically loaded.
     config.autoload_paths += %W(#{config.root}/lib)
 
+    config.middleware.use Rack::OAuth2::Server::Rails::Authorize
     config.middleware.use Rack::OAuth2::Server::Resource::Bearer, 'OpenID Connect' do |req|
       AccessToken.valid.find_by(token: req.access_token) ||
       req.invalid_token!

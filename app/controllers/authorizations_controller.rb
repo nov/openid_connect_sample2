@@ -1,54 +1,45 @@
 class AuthorizationsController < ApplicationController
+  include Concerns::ConnectEndpoint
+
+  before_action :require_oauth_request
+  before_action :require_response_type_code
+  before_action :require_client
+  before_action :require_authentication
+
   def new
   end
 
   def create
-    authorization.save!
-    separator = if current_client.redirect_uri.include?('?')
-      '&'
+    if params[:commit] == 'approve'
+      authorization = current_account.authorizations.create(
+        client: @client,
+        nonce: oauth_request.nonce
+      )
+      authorization.scopes << requested_scopes
+      oauth_response.code = authorization.code
+      oauth_response.redirect_uri = @redirect_uri
+      oauth_response.approve!
+      redirect_to oauth_response.location
     else
-      '?'
+      oauth_request.access_denied!
     end
-    redirect_to [current_client.redirect_uri, {code: authorization.code, state: accepted_params[:state]}.to_query].join(separator)
   end
 
   private
 
-  def authorization
-    unless @authorization
-      @authorization = current_account.authorizations.build(
-        client: current_client,
-        nonce: accepted_params[:nonce]
-      )
-      @authorization.scopes << requested_scopes
-    end
-    @authorization
+  def require_client
+    @client = Client.find_by(identifier: oauth_request.client_id) or oauth_request.invalid_request!
+    @redirect_uri = oauth_request.verify_redirect_uri! @client.redirect_uri
   end
-  helper_method :authorization
-
-  def accepted_params
-    required_params = [:client_id, :response_type, :redirect_uri, :scope]
-    optional_params = [:nonce, :state]
-    required_params.each do |key|
-      params.require key
-    end
-    if params[:response_type] != 'code'
-      raise HttpError::BadRequest.new('only respose_type=code is supported')
-    end
-    params.permit *(required_params + optional_params)
-  end
-  helper_method :accepted_params
 
   def requested_scopes
-    @requested_scopes ||= Scope.where name: accepted_params[:scope].split
+    @requested_scopes ||= Scope.where(name: oauth_request.scope.split)
   end
   helper_method :requested_scopes
 
-  def current_client
-    @current_client ||= Client.find_by!(
-      identifier: accepted_params[:client_id],
-      redirect_uri: accepted_params[:redirect_uri]
-    )
+  def require_response_type_code
+    unless oauth_request.response_type == :code
+      oauth_request.unsupported_response_type!
+    end
   end
-  helper_method :current_client
 end

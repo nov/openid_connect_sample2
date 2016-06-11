@@ -48,4 +48,5 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 # NOTE: added by nov
 gem 'tpitale-constant_cache', require: 'constant_cache'
+gem 'rack-oauth2', '>= 1.3.1'
 gem 'openid_connect'
