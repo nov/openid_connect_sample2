@@ -17,9 +17,7 @@ class IdToken < ApplicationRecord
   end
 
   def to_jwt
-    to_response_object.to_jwt(self.class.key_pair) do |jwt|
-      jwt.kid = self.class.config[:kid]
-    end
+    to_response_object.to_jwt(self.class.private_jwk)
   end
 
   private
@@ -34,14 +32,18 @@ class IdToken < ApplicationRecord
       @key_pair ||= OpenSSL::PKey::RSA.generate 2048
     end
 
+    def private_jwk
+      JSON::JWK.new key_pair
+    end
+
+    def public_jwk
+      JSON::JWK.new key_pair.public_key
+    end
+
     def config
-      kid = :default
       {
         issuer: 'http://op2.dev',
-        kid: kid,
-        jwk_set: JSON::JWK::Set.new(
-          JSON::JWK.new(key_pair.public_key, kid: kid)
-        )
+        jwk_set: JSON::JWK::Set.new(public_jwk)
       }
     end
   end
